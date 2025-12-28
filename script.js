@@ -5,8 +5,11 @@ async function loadMarkdownContent(section) {
 
         // Special handling for different sections
         if (section === 'faq') {
-            // Load single FAQ file
-            const response = await fetch('content/faq.md');
+            // Dynamically load all FAQ files and concatenate them
+            markdownText = await loadAllFAQFiles();
+        } else if (section.startsWith('faq') && section !== 'faq') {
+            // Handle individual FAQ sections (faq1, faq2, faq3, etc.)
+            const response = await fetch(`content/${section}.md`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -34,7 +37,7 @@ async function loadMarkdownContent(section) {
         }, 100);
 
         // Add separators to FAQ headings if this is the FAQ section
-        if (section === 'faq') {
+        if (section.startsWith('faq')) {
             addSeparatorsToFaq();
         }
 
@@ -47,6 +50,50 @@ async function loadMarkdownContent(section) {
         console.error('Error loading markdown content:', error);
         document.getElementById('content-container').innerHTML = `<p>콘텐츠를 불러오는 중 오류가 발생했습니다: ${error.message}</p>`;
     }
+}
+
+// Function to dynamically load all FAQ files
+async function loadAllFAQFiles() {
+    let markdownText = '';
+    let faqIndex = 1;
+    let hasMoreFAQs = true;
+
+    while (hasMoreFAQs) {
+        try {
+            const response = await fetch(`content/faq${faqIndex}.md`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const text = await response.text();
+
+            if (faqIndex === 1) {
+                // First FAQ file, include the header
+                markdownText = text;
+            } else {
+                // Subsequent FAQ files, remove the header to avoid duplicates
+                markdownText = markdownText + '\n\n' + removeHeaderFromMarkdown(text);
+            }
+
+            faqIndex++;
+        } catch (error) {
+            // If we get an error (likely 404 for non-existent file), stop the loop
+            hasMoreFAQs = false;
+        }
+    }
+
+    // If no individual FAQ files were found, try loading the original faq.md
+    if (faqIndex === 1) {
+        try {
+            const response = await fetch('content/faq.md');
+            if (response.ok) {
+                markdownText = await response.text();
+            }
+        } catch (error) {
+            // If faq.md doesn't exist either, return empty string
+        }
+    }
+
+    return markdownText;
 }
 
 // Function to add separators between FAQ items
@@ -69,6 +116,12 @@ function addSeparatorsToFaq() {
     });
 }
 
+
+// Helper function to remove header from markdown text (to avoid duplicate headers when concatenating)
+function removeHeaderFromMarkdown(text) {
+    // Remove the first line if it starts with # (header)
+    return text.replace(/^#[^\n]*\n/, '');
+}
 
 // Function to add target="_blank" to all links in content
 function addBlankTargetToContentLinks() {
@@ -103,9 +156,11 @@ document.addEventListener('click', function(e) {
         if (href && href.startsWith('#') && !e.target.classList.contains('nav-link')) {
             e.preventDefault();
             const targetId = href.substring(1);
-            // Check if this is a section link (like decision_table) that should load a new page
+            // Check if this is a section link (like decision_table or testing_for_auditors) that should load a new page
             if (targetId === 'decision_table') {
                 loadMarkdownContent('decision_table');
+            } else if (targetId === 'testing_for_auditors') {
+                loadMarkdownContent('testing_for_auditors');
             } else {
                 // Handle as internal anchor link
                 const targetElement = document.getElementById(targetId);
@@ -124,7 +179,7 @@ async function performSearch(searchTerm) {
         return;
     }
 
-    // Search in all markdown files
+    // Search in all regular markdown files
     const sections = ['introduction', 'sdlc', 'static', 'dynamic', 'management', 'tools', 'resources', 'faq'];
     let found = false;
 
@@ -150,9 +205,47 @@ async function performSearch(searchTerm) {
         }
     }
 
+    // If not found in regular sections, search in FAQ files
+    if (!found) {
+        found = await searchInFAQFiles(searchTerm);
+    }
+
     if (!found) {
         alert(`"${searchTerm}"에 대한 검색 결과가 없습니다.`);
     }
+}
+
+// Function to search in all FAQ files
+async function searchInFAQFiles(searchTerm) {
+    let faqIndex = 1;
+    let hasMoreFAQs = true;
+
+    while (hasMoreFAQs) {
+        try {
+            const response = await fetch(`content/faq${faqIndex}.md`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const content = await response.text();
+
+            if (content.toLowerCase().includes(searchTerm.toLowerCase())) {
+                // Load the specific FAQ file where the term was found
+                await loadMarkdownContent(`faq${faqIndex}`);
+
+                // Highlight the search term after content loads
+                setTimeout(() => highlightText(searchTerm), 100);
+
+                return true;
+            }
+
+            faqIndex++;
+        } catch (error) {
+            // If we get an error (likely 404 for non-existent file), stop the loop
+            hasMoreFAQs = false;
+        }
+    }
+
+    return false;
 }
 
 // Add search functionality
