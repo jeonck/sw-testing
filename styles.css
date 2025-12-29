@@ -469,6 +469,163 @@ body {
     .nav-links {
         flex-wrap: wrap;
     }
+
+    .testing-practice-cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .practice-card {
+        padding: 1.2rem;
+    }
+
+    .practice-card h3 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Testing Practice Cards */
+.testing-practice-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.practice-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.practice-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #2e7d32, #43a047);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.practice-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(46, 125, 50, 0.2);
+    border-color: #c8e6c9;
+}
+
+.practice-card:hover::before {
+    transform: scaleX(1);
+}
+
+.practice-card h3 {
+    color: #2e7d32;
+    font-size: 1.4rem;
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+}
+
+.practice-card p {
+    color: #4a5568;
+    font-size: 1rem;
+    margin: 0.5rem 0 1rem;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+.practice-card ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.practice-card ul li {
+    padding: 0.4rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.practice-card ul li:before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: #43a047;
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.practice-card:hover ul li:before {
+    transform: translateX(3px);
+}
+
+.practice-card ul li a {
+    color: #2d3748;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.practice-card ul li a:hover {
+    color: #2e7d32;
+    text-decoration: underline;
+}
+
+/* Category-specific colors */
+.practice-card#static-practice {
+    border-left: 4px solid #1976d2;
+}
+
+.practice-card#static-practice:hover {
+    border-color: #1976d2;
+}
+
+.practice-card#blackbox-practice {
+    border-left: 4px solid #7b1fa2;
+}
+
+.practice-card#blackbox-practice:hover {
+    border-color: #7b1fa2;
+}
+
+.practice-card#defect-practice {
+    border-left: 4px solid #d32f2f;
+}
+
+.practice-card#defect-practice:hover {
+    border-color: #d32f2f;
+}
+
+.practice-card#nonfunctional-practice {
+    border-left: 4px solid #f57c00;
+}
+
+.practice-card#nonfunctional-practice:hover {
+    border-color: #f57c00;
+}
+
+.practice-card#process-practice {
+    border-left: 4px solid #388e3c;
+}
+
+.practice-card#process-practice:hover {
+    border-color: #388e3c;
+}
+
+/* Detailed content section */
+.detailed-content {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e0e0e0;
 }
 
 /* Print styles */
@@ -476,15 +633,15 @@ body {
     body {
         background-color: white;
     }
-    
+
     .main-nav {
         display: none;
     }
-    
+
     .main-content {
         padding: 0;
     }
-    
+
     .markdown-content {
         box-shadow: none;
         border: 1px solid #ccc;
